@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apartment Units | GLOSS MATRIX</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --gold: #d4af37; 
+            --accent: #c9a961; 
+            --bg: #0a0a0a; 
+            --glass: rgba(255, 255, 255, 0.03); 
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            margin: 0; 
+            background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%); 
+            color: white; 
+            font-family: 'Inter', sans-serif; 
+            overflow-x: hidden; 
+        }
+
+        /* NAVIGATION */
+        nav { 
+            position: fixed; top: 0; width: 100%; padding: 30px 10%; 
+            display: flex; justify-content: space-between; align-items: center; 
+            z-index: 100; backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .logo { font-size: 1.2rem; font-weight: 900; letter-spacing: 5px; color: var(--gold); text-transform: uppercase; text-decoration: none; }
+        .back-link { color: white; text-decoration: none; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; opacity: 0.6; transition: 0.3s; }
+        .back-link:hover { opacity: 1; color: var(--gold); }
+
+        /* HEADER */
+        .header {
+            padding: 150px 10% 80px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 4rem;
+            font-weight: 200;
+            line-height: 1;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #fff 0%, var(--gold) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header .subtitle {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            color: var(--accent);
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        /* UNITS GRID */
+        .container {
+            padding: 50px 10%;
+        }
+        .units-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 40px;
+            margin-top: 50px;
+        }
+
+        /* UNIT CARD */
+        .unit-card {
+            background: var(--glass);
+            border: 1px solid rgba(255,255,255,0.08);
+            backdrop-filter: blur(20px);
+            padding: 50px;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .unit-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gold), var(--accent));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: 0.4s;
+        }
+        .unit-card:hover::before {
+            transform: scaleX(1);
+        }
+        .unit-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(212,175,55,0.3);
+            border-color: rgba(212,175,55,0.3);
+        }
+
+        .unit-title {
+            font-size: 2rem;
+            font-weight: 300;
+            color: var(--gold);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .unit-subtitle {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .unit-price {
+            font-size: 2.5rem;
+            font-weight: 200;
+            color: var(--gold);
+            margin-bottom: 40px;
+            letter-spacing: 1px;
+        }
+
+        /* SPECS */
+        .specs-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        .spec-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .spec-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #666;
+            font-weight: 600;
+        }
+        .spec-value {
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: white;
+        }
+        .spec-value .unit {
+            font-size: 0.85rem;
+            color: #888;
+            margin-left: 5px;
+        }
+
+        /* FEATURES */
+        .features {
+            margin: 40px 0;
+        }
+        .features h3 {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--gold);
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        .features-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #a0a0a0;
+            font-size: 0.95rem;
+        }
+        .feature-item::before {
+            content: '◆';
+            color: var(--gold);
+            font-size: 0.6rem;
+        }
+
+        /* FLOOR PLAN */
+        .floor-plan {
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .floor-plan h3 {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--gold);
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        .floor-plan-box {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 80px 40px;
+            text-align: center;
+            color: #666;
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+        }
+
+        /* CONTACT BUTTON */
+        .contact-btn {
+            display: inline-block;
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--accent) 100%);
+            color: #000;
+            text-decoration: none;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            margin-top: 30px;
+        }
+        .contact-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(212, 175, 55, 0.4);
+        }
+        
+        .tour-btn {
+            display: inline-block;
+            width: 100%;
+            padding: 18px;
+            background: transparent;
+            color: var(--gold);
+            text-decoration: none;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            border: 2px solid var(--gold);
+            cursor: pointer;
+            transition: all 0.4s ease;
+            margin-top: 15px;
+        }
+        .tour-btn:hover {
+            background: var(--gold);
+            color: #000;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(212, 175, 55, 0.4);
+        }
+
+        /* FOOTER */
+        footer {
+            padding: 80px 10% 40px;
+            text-align: center;
+            border-top: 1px solid #222;
+            margin-top: 100px;
+        }
+        .footer-logo {
+            font-size: 1.5rem;
+            color: var(--gold);
+            letter-spacing: 10px;
+            margin-bottom: 15px;
+            display: block;
+            font-weight: 800;
+        }
+        .legal {
+            font-size: 0.65rem;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="Moreenhanced.html" class="logo">Gloss Matrix</a>
+        <a href="Moreenhanced.html" class="back-link">← Back to Home</a>
+    </nav>
+
+    <div class="header">
+        <div class="subtitle">Available Residences</div>
+        <h1>Luxury Units</h1>
+    </div>
+
+    <div class="container">
+        <div class="units-grid">
+            
+            <!-- Unit 1 -->
+            <div class="unit-card">
+                <h2 class="unit-title">Penthouse A</h2>
+                <p class="unit-subtitle">Obsidian Tower • Floor 42-43</p>
+                <div class="unit-price">$8,500,000</div>
+                
+                <div class="specs-grid">
+                    <div class="spec-item">
+                        <div class="spec-label">Bedrooms</div>
+                        <div class="spec-value">4</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-label">Bathrooms</div>
+                        <div class="spec-value">4.5</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-label">Square Feet</div>
+                        <div class="spec-value">5,200<span class="unit">sq ft</span></div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-label">Parking</div>
+                        <div class="spec-value">3<span class="unit">spaces</span></div>
+                    </div>
+                </div>
+
+                <div class="features">
+                    <h3>Premium Features</h3>
+                    <div class="features-list">
+                        <div class="feature-item">Floor-to-ceiling windows with city views</div>
+                        <div class="feature-item">Private elevator access</div>
+                        <div class="feature-item">Smart home automation system</div>
+                        <div class="feature-item">Chef's kitchen with Italian marble</div>
+                        <div class="feature-item">Master suite with spa bathroom</div>
+                        <div class="feature-item">Expansive private terrace</div>
+                        <div class="feature-item">Climate-controlled wine cellar</div>
+                    </div>
+                </div>
+
+                <div class="floor-plan">
+                    <h3>Floor Plan</h3>
+                    <div class="floor-plan-box">DUPLEX LAYOUT AVAILABLE</div>
+                </div>
+
+                <a href="#" class="contact-btn">Schedule Viewing</a>
+                <a href="virtual-tour.html" class="tour-btn">🏠 Virtual 3D Tour</a>
+            </div>
+
+            <!-- Unit 2 -->
+            <div class="unit-card">
+                <h2 class="unit-title">Skyline Suite</h2>
+                <p class="unit-subtitle">Lumina Heights • Floor 35</p>
+                <div class="unit-price">$12,000,000</div>
+                
+                <div class="specs-grid">
+                    <div class="spec-item">
+                        <div class="spec-label">Bedrooms</div>
+                        <div class="spec-value">5</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-label">Bathrooms</div>
+                        <div class="spec-value">5.5</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-label">Square Feet</div>
+                        <div class="spec-value">6,800<span class="unit">sq ft</span></div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-label">Parking</div>
+                        <div class="spec-value">4<span class="unit">spaces</span></div>
+                    </div>
+                </div>
+
+                <div class="features">
+                    <h3>Premium Features</h3>
+                    <div class="features-list">
+                        <div class="feature-item">Photovoltaic energy generation system</div>
+                        <div class="feature-item">360-degree panoramic views</div>
+                        <div class="feature-item">Private gym and wellness room</div>
+                        <div class="feature-item">Gourmet kitchen with top-tier appliances</div>
+                        <div class="feature-item">Home theater with acoustic panels</div>
+                        <div class="feature-item">3,000 sq ft wraparound terrace</div>
+                        <div class="feature-item">Sustainable LEED Platinum certified</div>
+                    </div>
+                </div>
+
+                <div class="floor-plan">
+                    <h3>Floor Plan</h3>
+                    <div class="floor-plan-box">SINGLE LEVEL LUXURY</div>
+                </div>
+
+                <a href="#" class="contact-btn">Schedule Viewing</a>
+                <a href="virtual-tour.html" class="tour-btn">🏠 Virtual 3D Tour</a>
+            </div>
+
+            <!-- Unit 3 -->
+            <div class="unit-card">
+                <h2 class="unit-title">Crown Residence</h2>
+                <p class="unit-subtitle">Chrome Pinnacle • Floor 48-50</p>
+                <div class="unit-price">$15,000,000</div>
+                
+                <div class="specs-grid">
+                    <div class="spec-item">
+                        <div class="spec-label">Bedrooms</div>
+                        <div class="spec-value">6</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-label">Bathrooms</div>
+                        <div class="spec-value">6.5</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-label">Square Feet</div>
+                        <div class="spec-value">8,500<span class="unit">sq ft</span></div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-label">Parking</div>
+                        <div class="spec-value">5<span class="unit">spaces</span></div>
+                    </div>
+                </div>
+
+                <div class="features">
+                    <h3>Premium Features</h3>
+                    <div class="features-list">
+                        <div class="feature-item">Triple-height atrium entrance</div>
+                        <div class="feature-item">Private rooftop infinity pool</div>
+                        <div class="feature-item">Biophilic garden integration</div>
+                        <div class="feature-item">Titanium exoskeleton architecture</div>
+                        <div class="feature-item">Art gallery lighting system</div>
+                        <div class="feature-item">Private staff quarters</div>
+                        <div class="feature-item">Helipad access (building amenity)</div>
+                    </div>
+                </div>
+
+                <div class="floor-plan">
+                    <h3>Floor Plan</h3>
+                    <div class="floor-plan-box">TRI-LEVEL MASTERPIECE</div>
+                </div>
+
+                <a href="#" class="contact-btn">Schedule Viewing</a>
+                <a href="virtual-tour.html" class="tour-btn">🏠 Virtual 3D Tour</a>
+            </div>
+
+            <!-- Unit 4 -->
+            <div class="unit-card">
+                <h2 class="unit-title">Metropolitan Suite</h2>
+                <p class="unit-subtitle">Obsidian Tower • Floor 28</p>
+                <div class="unit-price">$4,800,000</div>
+                
+                <div class="specs-grid">
+                    <div class="spec-item">
+                        <div class="spec-label">Bedrooms</div>
+                        <div class="spec-value">3</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-label">Bathrooms</div>
+                        <div class="spec-value">3.5</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-label">Square Feet</div>
+                        <div class="spec-value">3,400<span class="unit">sq ft</span></div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-label">Parking</div>
+                        <div class="spec-value">2<span class="unit">spaces</span></div>
+                    </div>
+                </div>
+
+                <div class="features">
+                    <h3>Premium Features</h3>
+                    <div class="features-list">
+                        <div class="feature-item">Open-concept living and dining</div>
+                        <div class="feature-item">High-performance glass windows</div>
+                        <div class="feature-item">Designer kitchen with quartz countertops</div>
+                        <div class="feature-item">Walk-in closets in all bedrooms</div>
+                        <div class="feature-item">Private balcony with glass railings</div>
+                        <div class="feature-item">Smart climate control system</div>
+                        <div class="feature-item">Premium hardwood flooring</div>
+                    </div>
+                </div>
+
+                <div class="floor-plan">
+                    <h3>Floor Plan</h3>
+                    <div class="floor-plan-box">MODERN OPEN LAYOUT</div>
+                </div>
+
+                <a href="#" class="contact-btn">Schedule Viewing</a>
+                <a href="virtual-tour.html" class="tour-btn">🏠 Virtual 3D Tour</a>
+            </div>
+
+        </div>
+    </div>
+
+    <footer>
+        <span class="footer-logo">GLOSS MATRIX</span>
+        <p class="legal">© 2026 ARCHITECTURAL EVOLUTION • DESIGNED WITH PASSION</p>
+    </footer>
+
+</body>
+</html>

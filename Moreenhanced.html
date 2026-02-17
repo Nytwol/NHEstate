@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GLOSS MATRIX | Elite Home Design</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/SAOShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/DepthLimitedBlurShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/UnpackDepthRGBAShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/SAOPass.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <style>
+        :root { 
+            --gold: #d4af37; 
+            --accent: #c9a961; 
+            --bg: #000;
+            --bg-secondary: #0a0a0a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --glass: rgba(255, 255, 255, 0.03);
+            --nav-bg: rgba(10, 10, 10, 0.7);
+            --card-bg: rgba(255, 255, 255, 0.03);
+        }
+        
+        [data-theme="light"] {
+            --gold: #b8860b;
+            --accent: #daa520;
+            --bg: #ffffff;
+            --bg-secondary: #f5f5f5;
+            --text-primary: #000000;
+            --text-secondary: #666666;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --glass: rgba(0, 0, 0, 0.03);
+            --nav-bg: rgba(255, 255, 255, 0.9);
+            --card-bg: rgba(0, 0, 0, 0.03);
+        }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+        body { 
+            margin: 0; 
+            background: var(--bg);
+            color: var(--text-primary); 
+            font-family: 'Inter', sans-serif; 
+            overflow-x: hidden;
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(212, 175, 55, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+        [data-theme="light"] body::before {
+            opacity: 0.3;
+        }
+        
+        #canvas-container { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100vh; 
+            z-index: 1; 
+            pointer-events: none;
+        }
+        #canvas-container::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40%;
+            background: linear-gradient(to top, var(--bg) 0%, transparent 100%);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* NAVIGATION */
+        nav { 
+            position: fixed; top: 0; width: 100%; padding: 25px 8%; 
+            display: flex; justify-content: space-between; align-items: center; 
+            z-index: 100; 
+            backdrop-filter: blur(20px) saturate(180%);
+            background: var(--nav-bg);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+        .logo { 
+            font-size: 1.4rem; 
+            font-weight: 900; 
+            letter-spacing: 3px; 
+            background: linear-gradient(135deg, var(--gold) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-transform: uppercase;
+        }
+        .nav-links { display: flex; gap: 40px; list-style: none; align-items: center; }
+        .nav-links a { 
+            color: white; 
+            text-decoration: none; 
+            font-size: 0.75rem; 
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            opacity: 0.7; 
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 8px 0;
+        }
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--gold);
+            transition: width 0.3s ease;
+        }
+        .nav-links a:hover { opacity: 1; color: var(--gold); }
+        .nav-links a:hover::after { width: 100%; }
+        
+        /* THEME TOGGLE */
+        .theme-toggle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .theme-toggle:hover {
+            border-color: var(--gold);
+            transform: rotate(180deg);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+        }
+        .theme-toggle svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--gold);
+            transition: all 0.3s ease;
+        }
+        .theme-icon {
+            position: absolute;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .theme-icon.hidden {
+            opacity: 0;
+            transform: rotate(180deg) scale(0);
+        }
+
+        /* SECTIONS */
+        section { min-height: 148vh; position: relative; display: flex; align-items: center; padding: 0 10%; z-index: 2; pointer-events: none; background: transparent; }
+        .content { max-width: 550px; opacity: 0; transform: translateY(30px); pointer-events: all; }
+        
+        h1 { 
+            font-size: 5rem; 
+            font-weight: 200; 
+            line-height: 1; 
+            margin-bottom: 30px; 
+            letter-spacing: -2px; 
+            background: linear-gradient(135deg, #fff 0%, var(--gold) 100%); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            background-clip: text;
+        }
+        h2 { 
+            font-size: 2.8rem; 
+            color: var(--gold); 
+            margin-bottom: 20px; 
+            font-weight: 300; 
+            text-transform: uppercase; 
+            letter-spacing: 3px; 
+        }
+        p { 
+            line-height: 1.9; 
+            color: var(--text-secondary); 
+            font-weight: 300; 
+            font-size: 1.15rem; 
+            margin-bottom: 25px;
+        }
+        .subtitle { 
+            font-size: 0.85rem; 
+            text-transform: uppercase; 
+            letter-spacing: 4px; 
+            color: var(--accent); 
+            margin-bottom: 15px; 
+            font-weight: 600;
+        }
+
+        /* CTA BUTTON */
+        .cta-btn {
+            display: inline-block;
+            padding: 18px 45px;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--accent) 100%);
+            color: #000;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            margin-top: 30px;
+        }
+        .cta-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--gold) 100%);
+            transition: 0.4s;
+            z-index: -1;
+        }
+        .cta-btn:hover::before {
+            left: 0;
+        }
+        .cta-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(212, 175, 55, 0.4);
+        }
+
+        /* PRODUCT GRID */
+        .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; margin-top: 50px; width: 100%; }
+        .card { 
+            padding: 40px; 
+            background: var(--card-bg); 
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(20px); 
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+            border-top: 3px solid transparent;
+            position: relative; 
+            overflow: hidden;
+        }
+        .card::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(212,175,55,0.1), transparent); transition: 0.6s; }
+        .card:hover::before { left: 100%; }
+        .card:hover { border-top-color: var(--gold); background: rgba(212, 175, 55, 0.05); transform: translateY(-8px); box-shadow: 0 20px 60px rgba(212,175,55,0.2); }
+        .card h3 { color: var(--gold); font-size: 1rem; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2.5px; font-weight: 500; }
+        .card p { font-size: 0.95rem; line-height: 1.7; margin-bottom: 0; color: #999; }
+        .card .price { color: var(--gold); font-size: 1.3rem; font-weight: 300; margin-top: 20px; letter-spacing: 1px; }
+
+        /* TESTIMONIALS */
+        .testi-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-top: 50px; }
+        .testi-item { border-left: 2px solid var(--gold); padding: 0 0 25px 30px; position: relative; transition: 0.3s; }
+        .testi-item:hover { border-left-color: var(--accent); transform: translateX(5px); }
+        .testi-item p { font-style: italic; color: #c0c0c0; font-size: 1.05rem; line-height: 1.8; margin-bottom: 20px; }
+        .testi-item span { color: var(--gold); font-weight: 600; font-size: 0.8rem; letter-spacing: 2.5px; text-transform: uppercase; }
+        .testi-item .role { display: block; color: #666; font-size: 0.75rem; margin-top: 5px; letter-spacing: 1.5px; }
+
+        /* STATS */
+        .stats { display: flex; gap: 60px; margin-top: 50px; }
+        .stat-item { flex: 1; }
+        .stat-num { font-size: 3.5rem; font-weight: 200; color: var(--gold); line-height: 1; margin-bottom: 10px; }
+        .stat-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: #666; }
+
+        /* MINIMAL FOOTER */
+        footer { 
+            position: relative; 
+            z-index: 2; 
+            padding: 40px 8% 20px;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(212, 175, 55, 0.15);
+        }
+        .footer-content {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+        .footer-brand h3 {
+            font-size: 1.3rem;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 4px;
+            margin-bottom: 12px;
+            font-weight: 900;
+        }
+        .footer-brand p {
+            color: #888;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+        .social-links {
+            display: flex;
+            gap: 10px;
+        }
+        .social-links a {
+            width: 32px;
+            height: 32px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gold);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        .social-links a:hover {
+            background: var(--gold);
+            color: #000;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        }
+        .footer-section h4 {
+            color: var(--gold);
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+        .footer-section ul {
+            list-style: none;
+        }
+        .footer-section ul li {
+            margin-bottom: 8px;
+        }
+        .footer-section ul li a {
+            color: #888;
+            text-decoration: none;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        .footer-section ul li a:hover {
+            color: var(--gold);
+            transform: translateX(3px);
+        }
+        .footer-bottom {
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .legal {
+            color: #666;
+            font-size: 0.75rem;
+        }
+        .footer-links {
+            display: flex;
+            gap: 20px;
+        }
+        .footer-links a {
+            color: #888;
+            text-decoration: none;
+            font-size: 0.75rem;
+            transition: color 0.3s ease;
+        }
+        .footer-links a:hover {
+            color: var(--gold);
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">Gloss Matrix</div>
+        <div class="nav-right">
+            <ul class="nav-links">
+                <li><a href="#s1">Manifesto</a></li>
+                <li><a href="#s2">Philosophy</a></li>
+                <li><a href="#s3">Collection</a></li>
+                <li><a href="#s4">Testimonials</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                <svg class="theme-icon" id="sunIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="5"/>
+                    <line x1="12" y1="1" x2="12" y2="3"/>
+                    <line x1="12" y1="21" x2="12" y2="23"/>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                    <line x1="1" y1="12" x2="3" y2="12"/>
+                    <line x1="21" y1="12" x2="23" y2="12"/>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+                <svg class="theme-icon hidden" id="moonIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <div id="canvas-container"></div>
+
+    <section id="s1">
+        <div class="content">
+            <div class="subtitle">Architectural Excellence</div>
+            <h1>Where luxury<br>meets innovation</h1>
+            <p>At Gloss Matrix, we craft architectural masterpieces that redefine modern living. Every structure is a symphony of cutting-edge design, sustainable materials, and timeless elegance—engineered to elevate your lifestyle.</p>
+            <a href="apartment-details.html" class="cta-btn">Explore Units</a>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-num">250+</div>
+                    <div class="stat-label">Projects Delivered</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num">15</div>
+                    <div class="stat-label">Years Excellence</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num">98%</div>
+                    <div class="stat-label">Client Satisfaction</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="s2" style="justify-content: flex-end;">
+        <div class="content">
+            <div class="subtitle">Our Philosophy</div>
+            <h2>Designed with soul</h2>
+            <p>We believe exceptional architecture transcends aesthetics—it transforms lives. Our designs merge cutting-edge technology with human-centric principles, creating spaces that breathe, adapt, and inspire.</p>
+            <p>Each project begins with understanding your vision. We harness AI-driven design optimization, sustainable engineering, and artisanal craftsmanship to deliver residences that are as intelligent as they are beautiful.</p>
+        </div>
+    </section>
+
+    <section id="s3">
+        <div class="content" style="max-width: 1100px;">
+            <div class="subtitle">Featured Residences</div>
+            <h2>The Pinnacle Collection</h2>
+            <div class="product-grid">
+                <div class="card">
+                    <h3>Obsidian Tower</h3>
+                    <p>A 45-story monument to minimalism. Dark-tinted glass façade with integrated smart systems. Floor-to-ceiling transparency meets uncompromising privacy.</p>
+                    <div class="price">From $8.5M</div>
+                </div>
+                <div class="card">
+                    <h3>Lumina Heights</h3>
+                    <p>Photovoltaic ceramic panels that generate power while maximizing natural light. Self-sustaining luxury with a 90% carbon reduction footprint.</p>
+                    <div class="price">From $12M</div>
+                </div>
+                <div class="card">
+                    <h3>Chrome Pinnacle</h3>
+                    <p>Our award-winning flagship. Mirror-polished titanium exoskeleton with biophilic interiors. Where structural art meets residential perfection.</p>
+                    <div class="price">From $15M</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="s4">
+        <div class="content" style="max-width: 1000px;">
+            <div class="subtitle">Client Voices</div>
+            <h2>Global Recognition</h2>
+            <div class="testi-wrap">
+                <div class="testi-item">
+                    <p>"Gloss Matrix transformed our vision into reality. The Lumina Heights isn't just a home—it's a living, breathing work of art that adapts to our family's needs. The integration of technology is seamless and intuitive."</p>
+                    <span>— Sarah Chen<span class="role">Tech Entrepreneur, Singapore</span></span>
+                </div>
+                <div class="testi-item">
+                    <p>"From concept to completion, their attention to detail was extraordinary. Every surface, every angle tells a story. This isn't architecture—it's poetry in steel and glass. We couldn't be more thrilled with our Obsidian Tower penthouse."</p>
+                    <span>— Marcus Wolfe<span class="role">Investment Director, New York</span></span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h3>GLOSS MATRIX</h3>
+                <p>Crafting architectural masterpieces that redefine modern living. Where luxury meets innovation in every detail.</p>
+                <div class="social-links">
+                    <a href="#" aria-label="Facebook">f</a>
+                    <a href="#" aria-label="Instagram">📷</a>
+                    <a href="#" aria-label="LinkedIn">in</a>
+                    <a href="#" aria-label="Twitter">𝕏</a>
+                </div>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#s1">About Us</a></li>
+                    <li><a href="#s2">Philosophy</a></li>
+                    <li><a href="#s3">Projects</a></li>
+                    <li><a href="#s4">Testimonials</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Properties</h4>
+                <ul>
+                    <li><a href="apartment-details.html">Available Units</a></li>
+                    <li><a href="virtual-tour.html">Virtual Tours</a></li>
+                    <li><a href="#">Floor Plans</a></li>
+                    <li><a href="#">Amenities</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Contact</h4>
+                <ul>
+                    <li><a href="mailto:info@glossmatrix.com">info@glossmatrix.com</a></li>
+                    <li><a href="tel:+1234567890">+1 (234) 567-890</a></li>
+                    <li><a href="#">Schedule Viewing</a></li>
+                    <li><a href="#">Newsletter</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p class="legal">© 2026 Gloss Matrix. All rights reserved. Designed with passion.</p>
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Careers</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.Fog(0x000000, 50, 120);
+        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(-16, 15, 70);
+        
+        // Dynamic lookAt target (negative x makes building appear right)
+        const lookAtTarget = { x: -18, y: 5, z: 0 };
+
+        // Mobile/device detection for optimization
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+        const isLowEnd = isMobile || navigator.hardwareConcurrency <= 4;
+        
+        const renderer = new THREE.WebGLRenderer({ 
+            antialias: !isMobile, 
+            alpha: true,
+            powerPreference: isMobile ? 'low-power' : 'high-performance'
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+        
+        // Post-processing with SAO
+        const composer = new THREE.EffectComposer(renderer);
+        const renderPass = new THREE.RenderPass(scene, camera);
+        composer.addPass(renderPass);
+        
+        // SAO Pass - balanced AO effect
+        if (!isMobile) {
+            const saoPass = new THREE.SAOPass(scene, camera, false, true);
+            saoPass.params.output = THREE.SAOPass.OUTPUT.Default;
+            saoPass.params.saoBias = 0.9;
+            saoPass.params.saoIntensity = 0.04;
+            saoPass.params.saoScale = 60;
+            saoPass.params.saoKernelRadius = 30;
+            saoPass.params.saoMinResolution = 0;
+            saoPass.params.saoBlur = true;
+            saoPass.params.saoBlurRadius = 1;
+            saoPass.params.saoBlurStdDev = 50;
+            saoPass.params.saoBlurDepthCutoff = 0.07;
+            composer.addPass(saoPass);
+        }
+
+        
+
+        // Realistic afternoon lighting with sun and sky fill
+        const shadowMapSize = isMobile ? 1024 : 2048;
+        const sun = new THREE.DirectionalLight(0xfff2e7, 1);  // Bright afternoon sun
+        sun.position.set(40, 20, 8);  // Afternoon angle
+        sun.castShadow = !isLowEnd;
+        sun.shadow.mapSize.width = shadowMapSize;
+        sun.shadow.mapSize.height = shadowMapSize;
+        sun.shadow.camera.near = 0.5;
+        sun.shadow.camera.far = 100;
+        sun.shadow.camera.left = -30;
+        sun.shadow.camera.right = 30;
+        sun.shadow.camera.top = 30;
+        sun.shadow.camera.bottom = -30;
+        sun.shadow.bias = -0.0001;
+        scene.add(sun);
+
+        // Ambient light for overall scene illumination
+        scene.add(new THREE.AmbientLight(0xffffff, 0.2));  // Reduced ambient
+        
+        // Warm top light for ambience
+        const warmTop = new THREE.PointLight(0xffaa66, 2.0, 40);
+        warmTop.position.set(0, 18, 0);  // Above building
+        scene.add(warmTop);
+        
+        // Warm bottom light for ambience
+        const warmBottom = new THREE.PointLight(0xffaa66, 1.5, 35);
+        warmBottom.position.set(0, -14, 0);  // Below building
+        scene.add(warmBottom);
+
+        // Optimized particle system - reduce count on mobile
+        const partGeom = new THREE.BufferGeometry();
+        const pCount = isMobile ? 2000 : 5000;
+        const pPos = new Float32Array(pCount * 3);
+        for(let i=0; i<pCount*3; i++) pPos[i] = (Math.random() - 0.5) * 150;
+        partGeom.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+        
+        const partMat = new THREE.PointsMaterial({ 
+            size: isMobile ? 0.2 : 0.15, 
+            color: 0xffffff, 
+            transparent: true, 
+            opacity: isMobile ? 0.5 : 0.7,
+            blending: THREE.AdditiveBlending 
+        });
+        const dustSystem = new THREE.Points(partGeom, partMat);
+        scene.add(dustSystem);
+
+        const scrollPivot = new THREE.Group();
+        const autoIdleGroup = new THREE.Group();
+        scrollPivot.add(autoIdleGroup);
+        scene.add(scrollPivot);
+
+        // Enhanced Materials
+        const chromeMat = new THREE.MeshStandardMaterial({ 
+            color: 0xe8e8e8, 
+            metalness: 0.95, 
+            roughness: 0.08,
+            envMapIntensity: 1.5
+        });
+        const ceramicMat = new THREE.MeshStandardMaterial({ 
+            color: 0xf5f5f5, 
+            metalness: 0.3, 
+            roughness: 0.25,
+            envMapIntensity: 1.0
+        });
+        const accentMat = new THREE.MeshStandardMaterial({ 
+            color: 0xe8e8e8, 
+            metalness: 0.8, 
+            roughness: 0.15
+        });
+        const darkMat = new THREE.MeshStandardMaterial({ 
+            color: 0x2a2a2a, 
+            metalness: 0.7, 
+            roughness: 0.2
+        });
+        // Light blue metallic window frames
+        const windowFrameMat = new THREE.MeshStandardMaterial({ 
+            color: 0x87ceeb,   // Sky blue / light blue
+            metalness: 0.9,    // Highly metallic
+            roughness: 0.15,   // Smooth reflective surface
+            envMapIntensity: 2.0  // Strong environmental reflections
+        });
+
+        // Wireframe - U-shaped to match building
+        const wireMat = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: 0 });
+        
+        const wireframeGroup = new THREE.Group();
+        
+        // Right wing wireframe
+        const wireRight = new THREE.Mesh(new THREE.BoxGeometry(5, 28, 10.5, 2, 12, 4), wireMat);
+        wireRight.position.x = 2.75;
+        wireframeGroup.add(wireRight);
+        
+        // Back wing wireframe
+        const wireBack = new THREE.Mesh(new THREE.BoxGeometry(5.5, 28, 5, 2, 12, 2), wireMat);
+        wireBack.position.set(-2.75, 0, -2.75);
+        wireframeGroup.add(wireBack);
+        
+        // Front left wireframe
+        const wireFront = new THREE.Mesh(new THREE.BoxGeometry(3, 28, 3, 1, 12, 1), wireMat);
+        wireFront.position.set(-4, 0, 3.75);
+        wireframeGroup.add(wireFront);
+        
+        wireframeGroup.scale.y = 0.001;
+        autoIdleGroup.add(wireframeGroup);
+
+        // Ground platform - white
+        const groundPlat = new THREE.Mesh(new THREE.BoxGeometry(14, 0.4, 14), ceramicMat);
+        groundPlat.position.y = -13.5;
+        groundPlat.receiveShadow = true;
+        autoIdleGroup.add(groundPlat);
+
+        // Main structural pillars with details
+        const pillars = [];
+        for(let i=0; i<4; i++){
+            const pillarGroup = new THREE.Group();
+            
+            // Main pillar - slightly tapered for realism
+            const p = new THREE.Mesh(new THREE.CylinderGeometry(0.20, 0.25, 28, 20), chromeMat);
+            pillarGroup.add(p);
+            
+            // No accent rings for clean look
+            
+            pillarGroup.position.set(i % 2 ? 5 : -5, 0, i < 2 ? 5 : -5);
+            pillarGroup.scale.y = 0.001;
+            autoIdleGroup.add(pillarGroup);
+            pillars.push(pillarGroup);
+        }
+
+        // Detailed floors with windows and balconies - U-SHAPED
+        const floors = [];
+        for(let i=0; i<12; i++){
+            const floorGroup = new THREE.Group();
+            
+            // Create U-shaped floor using multiple boxes
+            // Right wing
+            const rightWing = new THREE.Mesh(new THREE.BoxGeometry(5, 0.35, 10.5), ceramicMat);
+            rightWing.position.x = 2.75;
+            floorGroup.add(rightWing);
+            
+            // Back connector
+            const backWing = new THREE.Mesh(new THREE.BoxGeometry(5.5, 0.35, 5), ceramicMat);
+            backWing.position.x = -2.75;
+            backWing.position.z = -2.75;
+            floorGroup.add(backWing);
+            
+            // Front left partial
+            const frontLeft = new THREE.Mesh(new THREE.BoxGeometry(3, 0.35, 3), ceramicMat);
+            frontLeft.position.x = -4;
+            frontLeft.position.z = 3.75;
+            floorGroup.add(frontLeft);
+            
+            
+            // Balcony - only on right side for U-shape
+            const balconyDepth = 3;
+            const balconyWidth = 4;
+            const balcony = new THREE.Mesh(new THREE.BoxGeometry(balconyWidth, 0.2, balconyDepth), ceramicMat);
+            balcony.position.set(4.5, -0.15, 6);
+            floorGroup.add(balcony);
+            
+            // Balcony railing - front
+            const railingFront = new THREE.Mesh(new THREE.BoxGeometry(balconyWidth, 0.8, 0.08), chromeMat);
+            railingFront.position.set(4.5, 0.25, 6 + balconyDepth/2 - 0.05);
+            floorGroup.add(railingFront);
+            
+            // Balcony railing - sides
+            const railingSide1 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.8, balconyDepth), chromeMat);
+            railingSide1.position.set(4.5 + balconyWidth/2, 0.25, 6);
+            floorGroup.add(railingSide1);
+            
+            const railingSide2 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.8, balconyDepth), chromeMat);
+            railingSide2.position.set(4.5 - balconyWidth/2, 0.25, 6);
+            floorGroup.add(railingSide2);
+            
+            // Vertical railing posts - properly spaced along front railing
+            for(let j=0; j<5; j++){
+                const post = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.8, 8), chromeMat);
+                const postOffset = (j - 2) * (balconyWidth / 4);
+                post.position.set(4.5 + postOffset, 0.25, 6 + balconyDepth/2 - 0.05);
+                floorGroup.add(post);
+            }
+            
+            floorGroup.position.y = (i * 2.5) - 13;
+            floorGroup.scale.set(0, 1, 0);
+            autoIdleGroup.add(floorGroup);
+            floors.push(floorGroup);
+        }
+
+        // Crown/Roof structure - U-shaped to match building
+        const roofGroup = new THREE.Group();
+        
+        // Right roof section
+        const rightRoof = new THREE.Mesh(new THREE.BoxGeometry(5.5, 0.7, 11), ceramicMat);
+        rightRoof.position.x = 2.75;
+        roofGroup.add(rightRoof);
+        
+        // Back roof section
+        const backRoof = new THREE.Mesh(new THREE.BoxGeometry(6, 0.7, 5.5), ceramicMat);
+        backRoof.position.set(-3, 0, -2.75);
+        roofGroup.add(backRoof);
+        
+        // Front left roof section
+        const frontRoof = new THREE.Mesh(new THREE.BoxGeometry(3.5, 0.7, 3.5), ceramicMat);
+        frontRoof.position.set(-4, 0, 3.75);
+        roofGroup.add(frontRoof);
+        
+        
+        roofGroup.position.y = 17;
+        roofGroup.scale.set(0,0,0);
+        autoIdleGroup.add(roofGroup);
+
+        // Reflective metallic blue glass
+        const glassMat = new THREE.MeshStandardMaterial({ 
+            color: 0x4499ff,
+            metalness: 0.95,     // Highly metallic
+            roughness: 0.1,      // Smooth for clear reflections
+            transparent: true,
+            opacity: 0,
+            envMapIntensity: 3.0  // Strong environmental reflections
+        });
+        
+        // Right wing glass
+        const glassRight = new THREE.Mesh(new THREE.BoxGeometry(5, 28, 10.2), glassMat);
+        glassRight.position.set(2.75, 0, 0);
+        glassRight.scale.set(0.001, 1, 0.001);
+        autoIdleGroup.add(glassRight);
+        
+        // Back wing glass
+        const glassBack = new THREE.Mesh(new THREE.BoxGeometry(5.5, 28, 5), glassMat);
+        glassBack.position.set(-2.75, 0, -2.75);
+        glassBack.scale.set(0.001, 1, 0.001);
+        autoIdleGroup.add(glassBack);
+        
+        // Front left glass
+        const glassFront = new THREE.Mesh(new THREE.BoxGeometry(3, 28, 3), glassMat);
+        glassFront.position.set(-4, 0, 3.75);
+        glassFront.scale.set(0.001, 1, 0.001);
+        autoIdleGroup.add(glassFront);
+        
+        // Window frames - adapted for U-shaped building
+        const windowFrames = [];
+        for(let floor=0; floor<12; floor++){
+            const frameGroup = new THREE.Group();
+            // Right wing windows - front face (2.3m height matching floor spacing)
+            for(let win=0; win<2; win++){
+                const frame = new THREE.Mesh(new THREE.BoxGeometry(2.3, 2.3, 0.08), windowFrameMat);
+                frame.position.set(2.75 + (win - 0.5) * 2.4, 0, 5.2);
+                frameGroup.add(frame);
+            }
+            
+            // Right wing windows - right face
+            for(let win=0; win<3; win++){
+                const frame = new THREE.Mesh(new THREE.BoxGeometry(0.08, 2.3, 3.3), windowFrameMat);
+                frame.position.set(5.2, 0, (win - 1) * 3.5);
+                frameGroup.add(frame);
+            }
+            
+            // Back wing windows - back face
+            for(let win=0; win<2; win++){
+                const frame = new THREE.Mesh(new THREE.BoxGeometry(2.5, 2.3, 0.08), windowFrameMat);
+                frame.position.set(-2.75 + (win - 0.5) * 2.5, 0, -5.2);
+                frameGroup.add(frame);
+            }
+            
+            // Front left window
+            const frameFrontLeft = new THREE.Mesh(new THREE.BoxGeometry(2.5, 2.3, 0.08), windowFrameMat);
+            frameFrontLeft.position.set(-4, 0, 5.2);
+            frameGroup.add(frameFrontLeft);
+            
+            // Inner courtyard windows - adjusted to stay within floor boundaries
+            for(let win=0; win<2; win++){
+                const frame = new THREE.Mesh(new THREE.BoxGeometry(0.08, 2.3, 2.5), windowFrameMat);
+                frame.position.set(0.2, 0, 1.5 + win * 3.2);
+                frameGroup.add(frame);
+            }
+            
+            frameGroup.position.y = (floor * 2.5) - 12;
+            frameGroup.scale.set(0, 1, 0);
+            autoIdleGroup.add(frameGroup);
+            windowFrames.push(frameGroup);
+        }
+
+        // Enable shadows on all building meshes
+        autoIdleGroup.traverse((child) => {
+            if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+            }
+        });
+        
+        window.onload = () => {
+            gsap.to(wireframeGroup.scale, { y: 1, duration: 2, ease: "power3.inOut" });
+            gsap.to(wireMat, { opacity: 0.35, duration: 3 });
+            gsap.to(camera.position, { z: 65, duration: 2, ease: "power2.out" });
+        };
+
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: "body",
+                start: "top top",
+                end: "bottom+=20% bottom",
+                scrub: 2.5
+            }
+        });
+
+        tl.to(scrollPivot.rotation, { y: Math.PI * 1.2, ease: "none", duration: 6 }, 0)
+          .to(camera.position, { z: 45, y: 8, ease: "power1.inOut" }, 0)
+          // Camera horizontal positioning: left (building right) -> center -> right (philosophy, building left) -> center
+          .to(camera.position, { x: -2, ease: "power2.inOut", duration: 0.7 }, 0)
+          .to(lookAtTarget, { x: -3, ease: "power2.inOut", duration: 0.7 }, 0)
+          .to(camera.position, { x: 15, ease: "power2.inOut", duration: 1.2 }, 0.7)
+          .to(lookAtTarget, { x: 18, ease: "power2.inOut", duration: 1.2 }, 0.7)
+          .to(camera.position, { x: 0, ease: "power2.out", duration: 1 }, 2.2)
+          .to(lookAtTarget, { x: 0, ease: "power2.out", duration: 1 }, 2.2)
+          .to(pillars.map(p => p.scale), { y: 1, stagger: 0.08, ease: "back.out(1.2)" }, 0.2)
+          .to(floors.map(f => f.scale), { x: 1, z: 1, stagger: 0.06, ease: "back.out(1.1)" }, 0.8)
+          .to(windowFrames.map(f => f.scale), { x: 1, z: 1, stagger: 0.02 }, 1.2)
+          .to(roofGroup.scale, { x: 1, y: 1, z: 1, ease: "back.out(1.5)" }, 3)
+          .to(glassMat, { opacity: 0.4 }, 3.5)
+          .to(glassRight.scale, { x: 1, z: 1, ease: "power2.inOut" }, 3.5)
+          .to(glassBack.scale, { x: 1, z: 1, ease: "power2.inOut" }, 3.5)
+          .to(glassFront.scale, { x: 1, z: 1, ease: "power2.inOut" }, 3.5)
+          .to(glassMat, { opacity: 0 }, 5)
+          .to(wireMat, { opacity: 0 }, 3);
+
+        gsap.utils.toArray(".content").forEach(el => {
+            gsap.to(el, { opacity: 1, y: 0, scrollTrigger: { trigger: el, start: "top 80%", toggleActions: "play none none reverse" } });
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = Date.now() * 0.001;
+            
+            autoIdleGroup.rotation.y += 0.0008;
+            dustSystem.rotation.y += 0.0012;
+            dustSystem.position.y = Math.sin(time * 0.5) * 3;
+            
+            // Subtle camera sway and look at building with dynamic target
+            const swayX = Math.sin(time * 0.2) * 0.5;
+            camera.lookAt(lookAtTarget.x + swayX, lookAtTarget.y, lookAtTarget.z);
+            
+            composer.render();
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            composer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const sunIcon = document.getElementById('sunIcon');
+        const moonIcon = document.getElementById('moonIcon');
+        const html = document.documentElement;
+        
+        // Check for saved theme preference or default to 'dark'
+        const currentTheme = localStorage.getItem('theme') || 'dark';
+        html.setAttribute('data-theme', currentTheme);
+        
+        // Update icon visibility based on current theme
+        if (currentTheme === 'light') {
+            sunIcon.classList.add('hidden');
+            moonIcon.classList.remove('hidden');
+        }
+        
+        // Update fog color based on theme
+        function updateFogColor(theme) {
+            if (scene.fog) {
+                scene.fog.color.setHex(theme === 'light' ? 0xffffff : 0x000000);
+            }
+        }
+        
+        // Set initial fog color
+        updateFogColor(currentTheme);
+        
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Update 3D scene fog color
+            updateFogColor(newTheme);
+            
+            // Toggle icons
+            if (newTheme === 'light') {
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            } else {
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
